@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bye Béo - Ứng dụng dinh dưỡng MVP</title>
+    <title>Bye Béo - Ứng dụng dinh dưỡng </title>
     <style>
         * {
             margin: 0;
@@ -298,8 +298,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🌿 BYE BÉO MVP</h1>
-            <p class="subtitle">Ứng dụng theo dõi dinh dưỡng thông minh - Giai đoạn 1</p>
+            <h1>🌿 BYE BÉO </h1>
+            <p class="subtitle">Ứng dụng theo dõi dinh dưỡng thông minh</p>
         </div>
 
         <div class="main-content">
@@ -335,19 +335,44 @@
                         <option value="1.9">Rất nặng</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Mục tiêu:</label>
-                    <select id="goal">
-                        <option value="-500" selected>Giảm cân (0.5kg/tuần)</option>
-                        <option value="-250">Giảm cân nhẹ (0.25kg/tuần)</option>
-                        <option value="0">Duy trì cân nặng</option>
-                        <option value="250">Tăng cân nhẹ</option>
-                        <option value="500">Tăng cân</option>
-                    </select>
-                </div>
-                <button class="btn" onclick="calculateNutrition()">📊 Tính toán dinh dưỡng</button>
-            </div>
+                <!-- Mục tiêu -->
+<div class="form-group">
+  <label>Mục tiêu:</label>
+  <select id="goal">
+      <option value="-500" selected>Giảm cân (0.5kg/tuần)</option>
+      <option value="-250">Giảm cân nhẹ (0.25kg/tuần)</option>
+      <option value="0">Duy trì cân nặng</option>
+      <option value="250">Tăng cân nhẹ</option>
+      <option value="500">Tăng cân</option>
+  </select>
+</div>
 
+<!-- Số bữa mỗi ngày -->
+<div class="form-group">
+  <label>Số bữa/ngày:</label>
+  <select id="meal-frequency">
+      <option value="3">3 bữa</option>
+      <option value="4">4 bữa</option>
+      <option value="5" selected>5 bữa</option>
+      <option value="6">6 bữa</option>
+  </select>
+</div>
+
+<!-- Tỷ lệ macro -->
+<div class="form-group">
+  <label>Tỷ lệ Macro (% Carb : Protein : Fat)</label>
+  <select id="macro-ratio">
+      <option value="40-30-30">40 : 30 : 30 (Chuẩn)</option>
+      <option value="50-25-25">50 : 25 : 25 (High Carb)</option>
+      <option value="40-40-20">40 : 40 : 20 (High Protein)</option>
+  </select>
+</div>
+
+<!-- Nút tính toán & xuất thực đơn -->
+<div style="margin-top: 15px;">
+  <button class="btn" onclick="calculateNutrition()">📊 Tính toán dinh dưỡng</button>
+  <button class="btn btn-secondary" onclick="generateMealPlan()">📋 Xuất thực đơn mẫu</button>
+</div>
             <!-- Hiển thị kết quả tính toán -->
             <div class="card">
                 <h2>📊 Chỉ số dinh dưỡng</h2>
@@ -656,14 +681,20 @@
             // Tính calories mục tiêu
             const targetCalories = tdee + goal;
 
-            // Tính macros (30% protein, 40% carbs, 30% fat)
-            const proteinCalories = targetCalories * 0.30;
-            const carbCalories = targetCalories * 0.40;
-            const fatCalories = targetCalories * 0.30;
+           // Lấy tỷ lệ macro từ select
+const macroOption = document.getElementById('macro-ratio').value.split('-');
+const carbPercent = parseInt(macroOption[0]);
+const proteinPercent = parseInt(macroOption[1]);
+const fatPercent = parseInt(macroOption[2]);
 
-            const proteinGrams = Math.round(proteinCalories / 4);
-            const carbGrams = Math.round(carbCalories / 4);
-            const fatGrams = Math.round(fatCalories / 9);
+const proteinCalories = targetCalories * (proteinPercent / 100);
+const carbCalories = targetCalories * (carbPercent / 100);
+const fatCalories = targetCalories * (fatPercent / 100);
+
+const proteinGrams = Math.round(proteinCalories / 4);
+const carbGrams = Math.round(carbCalories / 4);
+const fatGrams = Math.round(fatCalories / 9);
+
 
             // Hiển thị kết quả
             document.getElementById('bmr').textContent = Math.round(bmr);
@@ -1179,6 +1210,28 @@
         window.addEventListener('beforeunload', function(e) {
             saveData();
         });
+// Tạo thực đơn mẫu dựa trên macro
+function generateMealPlan() {
+    const totalCalories = nutritionTargets.calories;
+    const proteinG = nutritionTargets.protein;
+    const carbG = nutritionTargets.carbs;
+    const fatG = nutritionTargets.fat;
+    const meals = parseInt(document.getElementById('meal-frequency').value) || 5;
+
+    const perMeal = {
+        calories: Math.round(totalCalories / meals),
+        protein: Math.round(proteinG / meals),
+        carbs: Math.round(carbG / meals),
+        fat: Math.round(fatG / meals)
+    };
+
+    alert(`📋 Gợi ý phân chia mỗi bữa (${meals} bữa/ngày):\n\n` +
+          `🔥 Calo: ${perMeal.calories} kcal\n` +
+          `🥩 Protein: ${perMeal.protein}g\n` +
+          `🌾 Carbs: ${perMeal.carbs}g\n` +
+          `🥑 Fat: ${perMeal.fat}g\n\n` +
+          `👉 Hãy chọn món ăn phù hợp với từng bữa từ danh sách có sẵn.`);
+}
 
         // Debug: Hiển thị thông tin version
         console.log('🌿 Bye Béo MVP v1.0 - Giai đoạn 1');
@@ -1186,9 +1239,6 @@
         console.log('🍽️ Database: 49 món Việt + custom foods');
         console.log('💾 Storage: LocalStorage support');
         console.log('⌨️ Shortcuts: Ctrl+S (save), Ctrl+E (export), Esc (close forms)');
-    </script>
-</body>
-</html>
     </script>
 </body>
 </html>
