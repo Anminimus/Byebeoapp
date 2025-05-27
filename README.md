@@ -298,8 +298,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🌿 BYE BÉO MVP</h1>
-            <p class="subtitle">Ứng dụng theo dõi dinh dưỡng thông minh - Giai đoạn 1</p>
+            <h1>🌿 BYE BÉO</h1>
+            <p class="subtitle">Ứng dụng theo dõi dinh dưỡng thông minh</p>
         </div>
 
         <div class="main-content">
