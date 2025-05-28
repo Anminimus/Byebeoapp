@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bye Béo - Ứng dụng dinh dưỡng </title>
+    <title>Bye Béo - Ứng dụng dinh dưỡng</title>
     <style>
         * {
             margin: 0;
@@ -284,6 +284,11 @@
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
 
+        .meal-plan-container {
+            margin-top: 20px;
+            grid-column: 1 / -1;
+        }
+
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -298,7 +303,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🌿 BYE BÉO </h1>
+            <h1>🌿 BYE BÉO</h1>
             <p class="subtitle">Ứng dụng theo dõi dinh dưỡng thông minh</p>
         </div>
 
@@ -336,43 +341,45 @@
                     </select>
                 </div>
                 <!-- Mục tiêu -->
-<div class="form-group">
-  <label>Mục tiêu:</label>
-  <select id="goal">
-      <option value="-500" selected>Giảm cân (0.5kg/tuần)</option>
-      <option value="-250">Giảm cân nhẹ (0.25kg/tuần)</option>
-      <option value="0">Duy trì cân nặng</option>
-      <option value="250">Tăng cân nhẹ</option>
-      <option value="500">Tăng cân</option>
-  </select>
-</div>
+                <div class="form-group">
+                    <label>Mục tiêu:</label>
+                    <select id="goal">
+                        <option value="-500" selected>Giảm cân (0.5kg/tuần)</option>
+                        <option value="-250">Giảm cân nhẹ (0.25kg/tuần)</option>
+                        <option value="0">Duy trì cân nặng</option>
+                        <option value="250">Tăng cân nhẹ</option>
+                        <option value="500">Tăng cân</option>
+                    </select>
+                </div>
 
-<!-- Số bữa mỗi ngày -->
-<div class="form-group">
-  <label>Số bữa/ngày:</label>
-  <select id="meal-frequency">
-      <option value="3">3 bữa</option>
-      <option value="4">4 bữa</option>
-      <option value="5" selected>5 bữa</option>
-      <option value="6">6 bữa</option>
-  </select>
-</div>
+                <!-- Số bữa mỗi ngày -->
+                <div class="form-group">
+                    <label>Số bữa/ngày:</label>
+                    <select id="meal-frequency">
+                        <option value="3">3 bữa</option>
+                        <option value="4">4 bữa</option>
+                        <option value="5" selected>5 bữa</option>
+                        <option value="6">6 bữa</option>
+                    </select>
+                </div>
 
-<!-- Tỷ lệ macro -->
-<div class="form-group">
-  <label>Tỷ lệ Macro (% Carb : Protein : Fat)</label>
-  <select id="macro-ratio">
-      <option value="40-30-30">40 : 30 : 30 (Chuẩn)</option>
-      <option value="50-25-25">50 : 25 : 25 (High Carb)</option>
-      <option value="40-40-20">40 : 40 : 20 (High Protein)</option>
-  </select>
-</div>
+                <!-- Tỷ lệ macro -->
+                <div class="form-group">
+                    <label>Tỷ lệ Macro (% Carb : Protein : Fat)</label>
+                    <select id="macro-ratio">
+                        <option value="40-30-30">40 : 30 : 30 (Chuẩn)</option>
+                        <option value="50-25-25">50 : 25 : 25 (High Carb)</option>
+                        <option value="40-40-20">40 : 40 : 20 (High Protein)</option>
+                    </select>
+                </div>
 
-<!-- Nút tính toán & xuất thực đơn -->
-<div style="margin-top: 15px;">
-  <button class="btn" onclick="calculateNutrition()">📊 Tính toán dinh dưỡng</button>
-  <button class="btn btn-secondary" onclick="generateMealPlan()">📋 Xuất thực đơn mẫu</button>
-</div>
+                <!-- Nút tính toán & xuất thực đơn -->
+                <div style="margin-top: 15px;">
+                    <button class="btn" onclick="calculateNutrition()">📊 Tính toán dinh dưỡng</button>
+                    <button class="btn btn-secondary" onclick="generateMealPlan()" style="margin-top: 10px;">📋 Gợi ý thực đơn</button>
+                </div>
+            </div>
+
             <!-- Hiển thị kết quả tính toán -->
             <div class="card">
                 <h2>📊 Chỉ số dinh dưỡng</h2>
@@ -429,6 +436,12 @@
                         <div class="macro-text" id="fat-text">0g / 0g</div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Gợi ý thực đơn mẫu -->
+            <div class="card meal-plan-container" id="meal-plan-output" style="display: none;">
+                <h2>📋 Gợi ý thực đơn mẫu</h2>
+                <div id="meal-plan-list"></div>
             </div>
 
             <!-- Ghi log thực phẩm -->
@@ -623,9 +636,20 @@
 
         // Khởi tạo app
         function initApp() {
+            loadData(); // Tải dữ liệu trước
             displayFoodList();
             updateMealDisplay();
+            updateTotalNutrition();
             updateNutritionBars();
+            addUtilityButtons();
+            
+            // Hiển thị thông báo chào mừng
+            if (!localStorage.getItem('byebeo_first_visit')) {
+                setTimeout(() => {
+                    alert('🌿 Chào mừng đến với Bye Béo Tool!\n\n✨ Tính năng chính:\n• Tính toán BMR, TDEE, Macros\n• Theo dõi bữa ăn hàng ngày\n• 50+ món ăn Việt phổ biến\n• Tự động lưu dữ liệu\n\n💡 Mẹo: Nhấn Ctrl+S để lưu, Ctrl+E để xuất dữ liệu!');
+                    localStorage.setItem('byebeo_first_visit', 'true');
+                }, 1000);
+            }
         }
 
         // Hiển thị danh sách thực phẩm
@@ -681,20 +705,19 @@
             // Tính calories mục tiêu
             const targetCalories = tdee + goal;
 
-           // Lấy tỷ lệ macro từ select
-const macroOption = document.getElementById('macro-ratio').value.split('-');
-const carbPercent = parseInt(macroOption[0]);
-const proteinPercent = parseInt(macroOption[1]);
-const fatPercent = parseInt(macroOption[2]);
+            // Lấy tỷ lệ macro từ select
+            const macroOption = document.getElementById('macro-ratio').value.split('-');
+            const carbPercent = parseInt(macroOption[0]);
+            const proteinPercent = parseInt(macroOption[1]);
+            const fatPercent = parseInt(macroOption[2]);
 
-const proteinCalories = targetCalories * (proteinPercent / 100);
-const carbCalories = targetCalories * (carbPercent / 100);
-const fatCalories = targetCalories * (fatPercent / 100);
+            const proteinCalories = targetCalories * (proteinPercent / 100);
+            const carbCalories = targetCalories * (carbPercent / 100);
+            const fatCalories = targetCalories * (fatPercent / 100);
 
-const proteinGrams = Math.round(proteinCalories / 4);
-const carbGrams = Math.round(carbCalories / 4);
-const fatGrams = Math.round(fatCalories / 9);
-
+            const proteinGrams = Math.round(proteinCalories / 4);
+            const carbGrams = Math.round(carbCalories / 4);
+            const fatGrams = Math.round(fatCalories / 9);
 
             // Hiển thị kết quả
             document.getElementById('bmr').textContent = Math.round(bmr);
@@ -714,6 +737,101 @@ const fatGrams = Math.round(fatCalories / 9);
 
             // Cập nhật thanh macro
             updateNutritionBars();
+            
+            // Thêm lời khuyên BMI
+            const advice = getBMIAdvice(parseFloat(bmi));
+            document.getElementById('bmi').title = advice;
+            
+            // Thêm màu cho BMI
+            const bmiElement = document.getElementById('bmi');
+            if (parseFloat(bmi) < 18.5 || parseFloat(bmi) >= 25) {
+                bmiElement.style.color = '#ef4444'; // Đỏ
+            } else if (parseFloat(bmi) >= 23 && parseFloat(bmi) < 25) {
+                bmiElement.style.color = '#f59e0b'; // Vàng
+            } else {
+                bmiElement.style.color = '#16a34a'; // Xanh
+            }
+
+            // Tự động lưu
+            autoSave();
+        }
+
+        // Tính BMI và đưa ra lời khuyên
+        function getBMIAdvice(bmi) {
+            if (bmi < 18.5) {
+                return "Thiếu cân - Nên tăng cường dinh dưỡng";
+            } else if (bmi >= 18.5 && bmi < 23) {
+                return "Bình thường - Duy trì tốt!";
+            } else if (bmi >= 23 && bmi < 25) {
+                return "Thừa cân nhẹ - Cần chú ý chế độ ăn";
+            } else if (bmi >= 25 && bmi < 30) {
+                return "Béo phì độ I - Nên giảm cân";
+            } else if (bmi >= 30 && bmi < 35) {
+                return "Béo phì độ II - Cần giảm cân nghiêm túc";
+            } else {
+                return "Béo phì độ III - Nên tham khảo bác sĩ";
+            }
+        }
+
+        // Tạo thực đơn mẫu
+        function generateMealPlan() {
+            if (nutritionTargets.calories === 0) {
+                alert('❌ Hãy tính toán dinh dưỡng trước!');
+                return;
+            }
+
+            const totalCalories = nutritionTargets.calories;
+            const proteinG = nutritionTargets.protein;
+            const carbG = nutritionTargets.carbs;
+            const fatG = nutritionTargets.fat;
+            const meals = parseInt(document.getElementById('meal-frequency').value) || 5;
+
+            const perMeal = {
+                calories: Math.round(totalCalories / meals),
+                protein: Math.round(proteinG / meals),
+                carbs: Math.round(carbG / meals),
+                fat: Math.round(fatG / meals)
+            };
+
+            // Hiển thị gợi ý phân chia
+            const mealPlanDiv = document.getElementById('meal-plan-list');
+            mealPlanDiv.innerHTML = `
+                <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="color: #16a34a; margin-bottom: 10px;">📋 Gợi ý phân chia mỗi bữa (${meals} bữa/ngày):</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.2em; font-weight: bold; color: #ef4444;">${perMeal.calories}</div>
+                            <div style="font-size: 0.9em; color: #6b7280;">Calo</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.2em; font-weight: bold; color: #ef4444;">${perMeal.protein}g</div>
+                            <div style="font-size: 0.9em; color: #6b7280;">Protein</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.2em; font-weight: bold; color: #3b82f6;">${perMeal.carbs}g</div>
+                            <div style="font-size: 0.9em; color: #6b7280;">Carbs</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.2em; font-weight: bold; color: #f59e0b;">${perMeal.fat}g</div>
+                            <div style="font-size: 0.9em; color: #6b7280;">Fat</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="background: #fffbeb; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                    <h4 style="color: #92400e; margin-bottom: 10px;">💡 Cách sử dụng:</h4>
+                    <ul style="color: #78350f; margin: 0; padding-left: 20px;">
+                        <li>Chọn thực phẩm từ danh sách bên dưới</li>
+                        <li>Thêm vào từng bữa sao cho đạt được số lượng macro trên</li>
+                        <li>Ưu tiên protein từ thịt, cá, trứng</li>
+                        <li>Carbs từ cơm, bánh mì, khoai</li>
+                        <li>Fat từ dầu ăn, hạt, bơ</li>
+                    </ul>
+                </div>
+            `;
+
+            // Hiển thị phần meal plan
+            document.getElementById('meal-plan-output').style.display = 'block';
+            document.getElementById('meal-plan-output').scrollIntoView({ behavior: 'smooth' });
         }
 
         // Chọn thực phẩm để thêm vào bữa ăn
@@ -775,6 +893,9 @@ const fatGrams = Math.round(fatCalories / 9);
             updateMealDisplay();
             updateTotalNutrition();
             updateNutritionBars();
+            
+            // Tự động lưu
+            autoSave();
         }
 
         // Đóng form thêm vào bữa ăn
@@ -819,6 +940,7 @@ const fatGrams = Math.round(fatCalories / 9);
             updateMealDisplay();
             updateTotalNutrition();
             updateNutritionBars();
+            autoSave();
         }
 
         // Cập nhật tổng dinh dưỡng
@@ -928,6 +1050,7 @@ const fatGrams = Math.round(fatCalories / 9);
             foodDatabase.push(newFood);
             displayFoodList();
             toggleAddForm();
+            autoSave();
             
             alert(`Đã thêm "${name}" vào cơ sở dữ liệu!`);
         }
@@ -944,10 +1067,11 @@ const fatGrams = Math.round(fatCalories / 9);
                 updateMealDisplay();
                 updateTotalNutrition();
                 updateNutritionBars();
+                autoSave();
             }
         }
 
-        // Lưu dữ liệu vào localStorage (cho phiên bản tương lai)
+        // Lưu dữ liệu vào localStorage
         function saveData() {
             try {
                 localStorage.setItem('byebeo_meals', JSON.stringify(todayMeals));
@@ -1088,67 +1212,18 @@ const fatGrams = Math.round(fatCalories / 9);
             alert(`💧 Khuyến nghị nước uống cho bạn:\n\n${waterNeeded}ml = ${liters} lít/ngày\n\nBao gồm:\n- Nước lọc: ${Math.round(waterNeeded * 0.7)}ml\n- Trà/café: ${Math.round(waterNeeded * 0.2)}ml\n- Từ thức ăn: ${Math.round(waterNeeded * 0.1)}ml`);
         }
 
-        // Tính BMI và đưa ra lời khuyên
-        function getBMIAdvice(bmi) {
-            if (bmi < 18.5) {
-                return "Thiếu cân - Nên tăng cường dinh dưỡng";
-            } else if (bmi >= 18.5 && bmi < 23) {
-                return "Bình thường - Duy trì tốt!";
-            } else if (bmi >= 23 && bmi < 25) {
-                return "Thừa cân nhẹ - Cần chú ý chế độ ăn";
-            } else if (bmi >= 25 && bmi < 30) {
-                return "Béo phì độ I - Nên giảm cân";
-            } else if (bmi >= 30 && bmi < 35) {
-                return "Béo phì độ II - Cần giảm cân nghiêm túc";
-            } else {
-                return "Béo phì độ III - Nên tham khảo bác sĩ";
-            }
+        // Thêm nút utilities vào giao diện
+        function addUtilityButtons() {
+            const header = document.querySelector('.header');
+            const utilityDiv = document.createElement('div');
+            utilityDiv.style.marginTop = '15px';
+            utilityDiv.innerHTML = `
+                <button onclick="showWaterRecommendation()" style="background: #06b6d4; color: white; border: none; padding: 8px 15px; border-radius: 5px; margin: 5px; cursor: pointer;">💧 Khuyến nghị nước</button>
+                <button onclick="exportData()" style="background: #3b82f6; color: white; border: none; padding: 8px 15px; border-radius: 5px; margin: 5px; cursor: pointer;">📥 Xuất dữ liệu</button>
+                <button onclick="resetAllData()" style="background: #ef4444; color: white; border: none; padding: 8px 15px; border-radius: 5px; margin: 5px; cursor: pointer;">🔄 Reset tất cả</button>
+            `;
+            header.appendChild(utilityDiv);
         }
-
-        // Cập nhật hàm calculateNutrition để hiển thị lời khuyên BMI
-        const originalCalculateNutrition = calculateNutrition;
-        calculateNutrition = function() {
-            originalCalculateNutrition();
-            
-            // Thêm lời khuyên BMI
-            const bmi = parseFloat(document.getElementById('bmi').textContent);
-            if (bmi && bmi > 0) {
-                const advice = getBMIAdvice(bmi);
-                document.getElementById('bmi').title = advice;
-                
-                // Thêm màu cho BMI
-                const bmiElement = document.getElementById('bmi');
-                if (bmi < 18.5 || bmi >= 25) {
-                    bmiElement.style.color = '#ef4444'; // Đỏ
-                } else if (bmi >= 23 && bmi < 25) {
-                    bmiElement.style.color = '#f59e0b'; // Vàng
-                } else {
-                    bmiElement.style.color = '#16a34a'; // Xanh
-                }
-            }
-            
-            // Tự động lưu
-            autoSave();
-        };
-
-        // Override các hàm để tự động lưu
-        const originalAddToMeal = addToMeal;
-        addToMeal = function() {
-            originalAddToMeal();
-            autoSave();
-        };
-
-        const originalRemoveMealItem = removeMealItem;
-        removeMealItem = function(mealType, itemId) {
-            originalRemoveMealItem(mealType, itemId);
-            autoSave();
-        };
-
-        const originalAddNewFood = addNewFood;
-        addNewFood = function() {
-            originalAddNewFood();
-            autoSave();
-        };
 
         // Thêm keyboard shortcuts
         document.addEventListener('keydown', function(e) {
@@ -1172,73 +1247,13 @@ const fatGrams = Math.round(fatCalories / 9);
             }
         });
 
-        // Thêm nút utilities vào giao diện
-        function addUtilityButtons() {
-            const header = document.querySelector('.header');
-            const utilityDiv = document.createElement('div');
-            utilityDiv.style.marginTop = '15px';
-            utilityDiv.innerHTML = `
-                <button onclick="showWaterRecommendation()" style="background: #06b6d4; color: white; border: none; padding: 8px 15px; border-radius: 5px; margin: 5px; cursor: pointer;">💧 Khuyến nghị nước</button>
-                <button onclick="exportData()" style="background: #3b82f6; color: white; border: none; padding: 8px 15px; border-radius: 5px; margin: 5px; cursor: pointer;">📥 Xuất dữ liệu</button>
-                <button onclick="resetAllData()" style="background: #ef4444; color: white; border: none; padding: 8px 15px; border-radius: 5px; margin: 5px; cursor: pointer;">🔄 Reset tất cả</button>
-            `;
-            header.appendChild(utilityDiv);
-        }
-
-        // Cập nhật hàm khởi tạo
-        function initApp() {
-            loadData(); // Tải dữ liệu trước
-            displayFoodList();
-            updateMealDisplay();
-            updateTotalNutrition();
-            updateNutritionBars();
-            addUtilityButtons();
-            
-            // Hiển thị thông báo chào mừng
-            if (!localStorage.getItem('byebeo_first_visit')) {
-                setTimeout(() => {
-                    alert('🌿 Chào mừng đến với Bye Béo MVP!\n\n✨ Tính năng chính:\n• Tính toán BMR, TDEE, Macros\n• Theo dõi bữa ăn hàng ngày\n• 50+ món ăn Việt phổ biến\n• Tự động lưu dữ liệu\n\n💡 Mẹo: Nhấn Ctrl+S để lưu, Ctrl+E để xuất dữ liệu!');
-                    localStorage.setItem('byebeo_first_visit', 'true');
-                }, 1000);
-            }
-        }
-
-        // Khởi tạo app khi trang load
-        window.addEventListener('load', initApp);
-
         // Tự động lưu khi đóng trang
         window.addEventListener('beforeunload', function(e) {
             saveData();
         });
-// Tạo thực đơn mẫu dựa trên macro
-function generateMealPlan() {
-    const totalCalories = nutritionTargets.calories;
-    const proteinG = nutritionTargets.protein;
-    const carbG = nutritionTargets.carbs;
-    const fatG = nutritionTargets.fat;
-    const meals = parseInt(document.getElementById('meal-frequency').value) || 5;
 
-    const perMeal = {
-        calories: Math.round(totalCalories / meals),
-        protein: Math.round(proteinG / meals),
-        carbs: Math.round(carbG / meals),
-        fat: Math.round(fatG / meals)
-    };
-
-    alert(`📋 Gợi ý phân chia mỗi bữa (${meals} bữa/ngày):\n\n` +
-          `🔥 Calo: ${perMeal.calories} kcal\n` +
-          `🥩 Protein: ${perMeal.protein}g\n` +
-          `🌾 Carbs: ${perMeal.carbs}g\n` +
-          `🥑 Fat: ${perMeal.fat}g\n\n` +
-          `👉 Hãy chọn món ăn phù hợp với từng bữa từ danh sách có sẵn.`);
-}
+        // Khởi tạo app khi trang load
+        window.addEventListener('load', initApp);
 
         // Debug: Hiển thị thông tin version
-        console.log('🌿 Bye Béo MVP v1.0 - Giai đoạn 1');
-        console.log('📊 Tính năng: BMR/TDEE calculation, Food logging, Macro tracking');
-        console.log('🍽️ Database: 49 món Việt + custom foods');
-        console.log('💾 Storage: LocalStorage support');
-        console.log('⌨️ Shortcuts: Ctrl+S (save), Ctrl+E (export), Esc (close forms)');
-    </script>
-</body>
-</html>
+        console.log('🌿 
